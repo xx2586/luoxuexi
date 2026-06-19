@@ -1,5 +1,14 @@
 [
   {
+    "slug": "dont-rush-ai-laptop",
+    "title": "先别急着买 AI 笔记本",
+    "date": "2026-06-19",
+    "readingTime": "8 分钟",
+    "tags": ["AI", "学习", "设备", "驻村"],
+    "excerpt": "与其急着追逐所谓 AI 笔记本，不如先把 Linux、Docker、VPS 和 AI 部署的知识框架搭起来。",
+    "file": "posts/dont-rush-ai-laptop.md"
+  },
+  {
     "slug": "start-a-long-term-blog",
     "title": "如何开始一个长期博客",
     "date": "2026-06-19",
