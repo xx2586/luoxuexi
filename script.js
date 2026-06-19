@@ -1,48 +1,30 @@
-const posts = [
-  {
-    title: "如何开始一个长期博客",
-    date: "2026-06-19",
-    readingTime: "6 分钟",
-    tags: ["写作", "博客"],
-    excerpt: "从主题、节奏和发布系统开始，把博客做成可以长期容纳思考的地方。",
-    url: "#"
-  },
-  {
-    title: "把读书笔记写成可复用的想法",
-    date: "2026-06-12",
-    readingTime: "8 分钟",
-    tags: ["读书", "方法"],
-    excerpt: "笔记不是摘抄的仓库，而是一次把别人的表达变成自己语言的练习。",
-    url: "#"
-  },
-  {
-    title: "一个项目结束后，我通常会复盘什么",
-    date: "2026-05-28",
-    readingTime: "5 分钟",
-    tags: ["复盘", "项目"],
-    excerpt: "结果、过程、判断、沟通和下次要保留的习惯，是我最常用的五个切入点。",
-    url: "#"
-  },
-  {
-    title: "写作时如何处理还不成熟的观点",
-    date: "2026-05-10",
-    readingTime: "7 分钟",
-    tags: ["写作", "思考"],
-    excerpt: "不是所有文章都要给结论。有些文章的价值，是把问题摆到更准确的位置。",
-    url: "#"
-  }
-];
+let posts = [];
 
 const state = {
   activeTag: "全部",
   query: ""
 };
 
+const homeSections = [
+  document.querySelector(".hero"),
+  document.querySelector(".toolbar"),
+  document.querySelector(".featured"),
+  document.querySelector("#articles"),
+  document.querySelector("#about"),
+  document.querySelector("#subscribe")
+];
+
 const postGrid = document.querySelector("#postGrid");
 const tagFilters = document.querySelector("#tagFilters");
 const searchInput = document.querySelector("#searchInput");
 const featuredPost = document.querySelector("#featuredPost");
 const resultCount = document.querySelector("#resultCount");
+const postView = document.querySelector("#postView");
+const postViewDate = document.querySelector("#postViewDate");
+const postViewTitle = document.querySelector("#postViewTitle");
+const postViewExcerpt = document.querySelector("#postViewExcerpt");
+const postViewTags = document.querySelector("#postViewTags");
+const postContent = document.querySelector("#postContent");
 
 function formatDate(value) {
   return new Intl.DateTimeFormat("zh-CN", {
@@ -50,6 +32,103 @@ function formatDate(value) {
     month: "long",
     day: "numeric"
   }).format(new Date(value));
+}
+
+function escapeHtml(value) {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function inlineMarkdown(value) {
+  return escapeHtml(value)
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/\*(.+?)\*/g, "<em>$1</em>")
+    .replace(/`(.+?)`/g, "<code>$1</code>")
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
+}
+
+function markdownToHtml(markdown) {
+  const lines = markdown.replace(/\r\n/g, "\n").split("\n");
+  const html = [];
+  let paragraph = [];
+  let list = [];
+  let inCode = false;
+  let codeLines = [];
+  let codeLanguage = "";
+
+  function flushParagraph() {
+    if (paragraph.length === 0) return;
+    html.push(`<p>${inlineMarkdown(paragraph.join(" "))}</p>`);
+    paragraph = [];
+  }
+
+  function flushList() {
+    if (list.length === 0) return;
+    html.push(`<ul>${list.map((item) => `<li>${inlineMarkdown(item)}</li>`).join("")}</ul>`);
+    list = [];
+  }
+
+  for (const line of lines) {
+    if (line.startsWith("```")) {
+      if (inCode) {
+        html.push(`<pre><code class="language-${escapeHtml(codeLanguage)}">${escapeHtml(codeLines.join("\n"))}</code></pre>`);
+        inCode = false;
+        codeLines = [];
+        codeLanguage = "";
+      } else {
+        flushParagraph();
+        flushList();
+        inCode = true;
+        codeLanguage = line.slice(3).trim();
+      }
+      continue;
+    }
+
+    if (inCode) {
+      codeLines.push(line);
+      continue;
+    }
+
+    if (line.trim() === "") {
+      flushParagraph();
+      flushList();
+      continue;
+    }
+
+    const heading = line.match(/^(#{1,3})\s+(.+)$/);
+    if (heading) {
+      flushParagraph();
+      flushList();
+      const level = heading[1].length;
+      html.push(`<h${level}>${inlineMarkdown(heading[2])}</h${level}>`);
+      continue;
+    }
+
+    const listItem = line.match(/^[-*]\s+(.+)$/);
+    if (listItem) {
+      flushParagraph();
+      list.push(listItem[1]);
+      continue;
+    }
+
+    const quote = line.match(/^>\s+(.+)$/);
+    if (quote) {
+      flushParagraph();
+      flushList();
+      html.push(`<blockquote>${inlineMarkdown(quote[1])}</blockquote>`);
+      continue;
+    }
+
+    paragraph.push(line.trim());
+  }
+
+  flushParagraph();
+  flushList();
+  return html.join("");
 }
 
 function getAllTags() {
@@ -68,9 +147,17 @@ function renderTags() {
   tagFilters.innerHTML = getAllTags()
     .map((tag) => {
       const activeClass = tag === state.activeTag ? " active" : "";
-      return `<button class="tag-button${activeClass}" type="button" data-tag="${tag}">${tag}</button>`;
+      return `<button class="tag-button${activeClass}" type="button" data-tag="${escapeHtml(tag)}">${escapeHtml(tag)}</button>`;
     })
     .join("");
+}
+
+function postHref(post) {
+  return `?post=${encodeURIComponent(post.slug)}`;
+}
+
+function tagTemplate(tags) {
+  return tags.map((tag) => `<span>#${escapeHtml(tag)}</span>`).join("");
 }
 
 function postTemplate(post) {
@@ -78,31 +165,32 @@ function postTemplate(post) {
     <article class="post-card">
       <div class="post-meta">
         <span>${formatDate(post.date)}</span>
-        <span>${post.readingTime}</span>
+        <span>${escapeHtml(post.readingTime)}</span>
       </div>
-      <h3>${post.title}</h3>
-      <p>${post.excerpt}</p>
+      <h3>${escapeHtml(post.title)}</h3>
+      <p>${escapeHtml(post.excerpt)}</p>
       <div class="post-tags">
-        ${post.tags.map((tag) => `<span>#${tag}</span>`).join("")}
+        ${tagTemplate(post.tags)}
       </div>
-      <a class="read-link" href="${post.url}">阅读全文</a>
+      <a class="read-link" href="${postHref(post)}">阅读全文</a>
     </article>
   `;
 }
 
 function renderFeatured() {
   const post = posts[0];
+  if (!post) return;
   featuredPost.innerHTML = `
     <div class="post-meta">
       <span>${formatDate(post.date)}</span>
-      <span>${post.readingTime}</span>
+      <span>${escapeHtml(post.readingTime)}</span>
     </div>
-    <h3>${post.title}</h3>
-    <p>${post.excerpt}</p>
+    <h3>${escapeHtml(post.title)}</h3>
+    <p>${escapeHtml(post.excerpt)}</p>
     <div class="post-tags">
-      ${post.tags.map((tag) => `<span>#${tag}</span>`).join("")}
+      ${tagTemplate(post.tags)}
     </div>
-    <a class="read-link" href="${post.url}">阅读全文</a>
+    <a class="read-link" href="${postHref(post)}">阅读全文</a>
   `;
 }
 
@@ -116,6 +204,64 @@ function renderPosts() {
   }
 
   postGrid.innerHTML = filteredPosts.map(postTemplate).join("");
+}
+
+function showHome() {
+  homeSections.forEach((section) => {
+    section.hidden = false;
+  });
+  postView.hidden = true;
+}
+
+async function showPost(slug) {
+  const post = posts.find((item) => item.slug === slug);
+  if (!post) {
+    showHome();
+    postGrid.innerHTML = `<p class="empty">没有找到这篇文章。你可以回到文章列表重新选择。</p>`;
+    return;
+  }
+
+  homeSections.forEach((section) => {
+    section.hidden = true;
+  });
+  postView.hidden = false;
+  postViewDate.textContent = `${formatDate(post.date)} / ${post.readingTime}`;
+  postViewTitle.textContent = post.title;
+  postViewExcerpt.textContent = post.excerpt;
+  postViewTags.innerHTML = tagTemplate(post.tags);
+  postContent.innerHTML = `<p class="muted">正在加载文章...</p>`;
+
+  const response = await fetch(post.file);
+  if (!response.ok) {
+    postContent.innerHTML = `<p class="empty">文章文件暂时无法加载。</p>`;
+    return;
+  }
+
+  const markdown = await response.text();
+  postContent.innerHTML = markdownToHtml(markdown);
+  document.title = `${post.title} - 我的写作现场`;
+  window.scrollTo({ top: 0, behavior: "instant" });
+}
+
+async function loadPosts() {
+  const response = await fetch("posts.json");
+  posts = await response.json();
+  posts.sort((a, b) => new Date(b.date) - new Date(a.date));
+}
+
+async function init() {
+  await loadPosts();
+  renderTags();
+  renderFeatured();
+  renderPosts();
+
+  const params = new URLSearchParams(window.location.search);
+  const slug = params.get("post");
+  if (slug) {
+    await showPost(slug);
+  } else {
+    showHome();
+  }
 }
 
 tagFilters.addEventListener("click", (event) => {
@@ -139,6 +285,4 @@ document.querySelector(".subscribe-form").addEventListener("submit", (event) => 
 
 document.querySelector("#year").textContent = new Date().getFullYear();
 
-renderTags();
-renderFeatured();
-renderPosts();
+init();

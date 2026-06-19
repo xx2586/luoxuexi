@@ -1,0 +1,38 @@
+[
+  {
+    "slug": "start-a-long-term-blog",
+    "title": "如何开始一个长期博客",
+    "date": "2026-06-19",
+    "readingTime": "6 分钟",
+    "tags": ["写作", "博客"],
+    "excerpt": "从主题、节奏和发布系统开始，把博客做成可以长期容纳思考的地方。",
+    "file": "posts/start-a-long-term-blog.md"
+  },
+  {
+    "slug": "reusable-reading-notes",
+    "title": "把读书笔记写成可复用的想法",
+    "date": "2026-06-12",
+    "readingTime": "8 分钟",
+    "tags": ["读书", "方法"],
+    "excerpt": "笔记不是摘抄的仓库，而是一次把别人的表达变成自己语言的练习。",
+    "file": "posts/reusable-reading-notes.md"
+  },
+  {
+    "slug": "project-retrospective",
+    "title": "一个项目结束后，我通常会复盘什么",
+    "date": "2026-05-28",
+    "readingTime": "5 分钟",
+    "tags": ["复盘", "项目"],
+    "excerpt": "结果、过程、判断、沟通和下次要保留的习惯，是我最常用的五个切入点。",
+    "file": "posts/project-retrospective.md"
+  },
+  {
+    "slug": "unfinished-ideas",
+    "title": "写作时如何处理还不成熟的观点",
+    "date": "2026-05-10",
+    "readingTime": "7 分钟",
+    "tags": ["写作", "思考"],
+    "excerpt": "不是所有文章都要给结论。有些文章的价值，是把问题摆到更准确的位置。",
+    "file": "posts/unfinished-ideas.md"
+  }
+]

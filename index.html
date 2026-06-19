@@ -82,6 +82,17 @@
         </form>
         <p class="muted">现在这是静态表单。上线后可以接入 Buttondown、Substack、ConvertKit 或自己的后端。</p>
       </section>
+
+      <article id="postView" class="post-view" hidden>
+        <a class="back-link" href="./">返回文章列表</a>
+        <header class="post-view-header">
+          <p id="postViewDate" class="eyebrow"></p>
+          <h1 id="postViewTitle"></h1>
+          <p id="postViewExcerpt" class="intro"></p>
+          <div id="postViewTags" class="post-tags"></div>
+        </header>
+        <div id="postContent" class="markdown-body"></div>
+      </article>
     </main>
 
     <footer class="footer">

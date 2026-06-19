@@ -1,27 +1,48 @@
 # 个人博客网站
 
-这是一个不依赖构建工具的静态博客雏形，适合先整理内容和视觉方向。
+这是一个不依赖构建工具的 Markdown 静态博客，适合先整理内容和视觉方向。
 
 ## 如何预览
 
-直接用浏览器打开 `index.html`。
+因为浏览器读取 Markdown 文件需要通过本地服务预览，推荐运行：
+
+```bash
+python3 -m http.server 4173
+```
+
+然后打开：
+
+```text
+http://127.0.0.1:4173/
+```
 
 ## 如何发布文章
 
-打开 `script.js`，在 `posts` 数组里新增文章：
+1. 在 `posts/` 文件夹里新增一篇 Markdown 文件，例如：
 
-```js
+```text
+posts/my-first-post.md
+```
+
+2. 在 `posts.json` 里新增文章信息：
+
+```json
 {
-  title: "文章标题",
-  date: "2026-06-19",
-  readingTime: "6 分钟",
-  tags: ["写作", "生活"],
-  excerpt: "文章摘要。",
-  url: "#"
+  "slug": "my-first-post",
+  "title": "文章标题",
+  "date": "2026-06-19",
+  "readingTime": "6 分钟",
+  "tags": ["写作", "生活"],
+  "excerpt": "文章摘要。",
+  "file": "posts/my-first-post.md"
 }
 ```
 
-如果之后想把每篇文章做成独立页面，可以把 `url` 改成类似 `posts/my-first-post.html` 的路径。
+3. 文章会自动出现在首页，链接格式是：
+
+```text
+?post=my-first-post
+```
 
 ## 如何上线
 
