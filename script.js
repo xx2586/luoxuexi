@@ -244,7 +244,7 @@ async function showPost(slug) {
 }
 
 async function loadPosts() {
-  const response = await fetch("posts.json?v=4");
+  const response = await fetch("posts.json?v=5");
   posts = await response.json();
   posts.sort((a, b) => new Date(b.date) - new Date(a.date));
 }
